@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Menu inicial</title>
+	<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="css/menus.css">
+	<script type="text/javascript" src="libs/jquery/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="libs/three/three.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/index.css">
+	<script type="text/javascript" src="libs/menus/menu.js"></script>
+</head>
+<body>
+	<div class="content">
+		<div class="content-menu"></div>
+		<div class="content-menu"></div>
+		<div class="content-menu"></div>
+		<div class="content-menu patron">
+			<div class="content-main-item" id="btn_Individual">
+				<div class="item-content"></div>
+				<div class="item-content ns"></div>
+				<h3>INDIVIDUAL</h3>
+			</div>
+			<div class="content-main-item" id="btn_Multijugador">
+				<div class="item-content"></div>
+				<div class="item-content ns"></div>
+				<h3>MULTIJUGADOR</h3>
+			</div>
+			<div class="content-main-item" id="btn_Records">
+				<div class="item-content"></div>
+				<div class="item-content ns"></div>
+				<h3>RECORDS</h3>
+			</div>
+			<div class="content-main-item" id="btn_Ajustes">
+				<div class="item-content"></div>
+				<div class="item-content ns"></div>
+				<h3>AJUSTES</h3>
+			</div>
+		</div>
+	</div>
+
+	<div id="modal_records" class="modal" style="display:none;">
+		<div class="contenedor" style="background-image: url(./assets/Images/Records/modalRecords.png);">
+			<label class="close_modal">X</label>
+			<div class="contenido" style="margin-top:24%; text-align:center; ">
+
+				<div>
+					<image src="./assets/Images/Records/Clasico.png" onclick="get('classic')" />
+				</div>
+
+			<div style="overflow-y: scroll; height: 200px;width:60%;margin: 0 auto;">
+				<table id="tabla_puntos">
+					<tr>
+						<th>Nombre</th>
+						<th>Puntos</th>
+					</tr>
+
+
+				</table>
+			</div>
+				
+
+			</div>
+		</div>
+	</div>
+
+	<div id="modal_ajustes" class="modal" style="display:none;">
+		<div class="contenedor" style="background-image: url(./assets/Images/Ajustes/modal2.png);">
+			<label class="close_modal">X</label>
+			<div class="contenido" style="margin-top:24px;">
+
+			<div class="configs">
+				<image id="btn_mute_m" src="./assets/Images/Ajustes/mute.png"/>
+				<image id="btn_sound_m" src="./assets/Images/Ajustes/sonido.png"/>
+				<image id="btn_mute_e" src="./assets/Images/Ajustes/mute.png"/>
+				<image id="btn_sound_e" src="./assets/Images/Ajustes/sonido.png"/>
+			</div>
+				
+			</div>
+		</div>
+	</div>
+
+</body>
+
+
+
+</html>

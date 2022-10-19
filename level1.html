@@ -1,0 +1,197 @@
+<html>
+<html lang="es">
+<head>
+
+	<title>Juego</title>
+	<link rel="stylesheet" href="css/juego.css">
+	<link rel="stylesheet" href="css/menus.css">
+
+	<script type="text/javascript" src="libs/jquery/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="libs/three/three2.js"></script>
+	<script type="text/javascript" src="libs/menus/menu.js"></script>
+	<script type="text/javascript" src="libs/three/MTLLoader.js"></script>
+	<script type="text/javascript" src="libs/three/OBJLoader.js"></script>
+	<script type="text/javascript" src="libs/three/FBXLoader.js"></script>
+	<script type="text/javascript" src="libs/three/inflate.min.js"></script>
+	<script type="text/javascript">
+		function redSettings() {
+			var storedList = localStorage.getItem("settings");
+			if (storedList == null) {
+				settings == [];
+			} else {
+				settings = JSON.parse(storedList);
+			}
+			return settings;
+		};
+	</script>
+	<script type="text/javascript">
+
+		var settings = redSettings();
+		var gameMode = settings[0].gameMode;
+
+		console.log(gameMode);
+
+		var scene;
+		var camera;
+		var renderer;
+		var controls;
+		var clock;
+		var deltaTime;
+		var keys = {};
+
+		var RESSOURCES_LOADED = false;
+
+		var paused = false;
+
+		var playerSpeed = 1;
+
+		$(document).ready(function () {
+			
+			setupScene();
+			
+			const firstCharacterGeometry = new THREE.BoxGeometry(1, 1, 1);
+			const firstCharacterMaterial = new THREE.MeshPhongMaterial({ color: "white" });
+			const firstCharacter = new THREE.Mesh(firstCharacterGeometry, firstCharacterMaterial);
+			firstCharacter.position.set(-3, 0, 0);
+			firstCharacter.castShadow = true;
+			firstCharacter.name = "firstCharacter";
+			scene.add(firstCharacter);
+
+			if(gameMode == "Multijugador"){
+			const secondCharacterGeometry = new THREE.BoxGeometry(1, 1, 1);
+			const secondCharacterMaterial = new THREE.MeshPhongMaterial({ color: "red" });
+			const secondCharacter = new THREE.Mesh(secondCharacterGeometry, secondCharacterMaterial);
+			secondCharacter.position.set(3, 0, 0);
+			secondCharacter.castShadow = true;
+			secondCharacter.name = "secondCharacter";
+			scene.add(secondCharacter);
+			}
+			
+			render();
+
+
+			document.addEventListener('keydown', onKeyDown);
+			document.addEventListener('keyup', onKeyUp);
+		});
+
+		
+		function onKeyDown(event) {
+			keys[String.fromCharCode(event.keyCode)] = true;
+		}
+
+		function onKeyUp(event) {
+			keys[String.fromCharCode(event.keyCode)] = false;
+		}
+
+		function render() {
+			var firstCharacter = scene.getObjectByName("firstCharacter");
+			var secondCharacter = scene.getObjectByName("secondCharacter");
+			deltaTime = clock.getDelta();
+
+
+			if (keys["A"]) {
+				firstCharacter.rotation.y += 5 * deltaTime;
+			} else if (keys["D"]) {
+				firstCharacter.rotation.y += (-5) * deltaTime;
+			}
+			if (keys["W"]) {
+				firstCharacter.translateZ(10 * deltaTime * playerSpeed);
+			} else if (keys["S"]) {
+				firstCharacter.translateZ((-10) * deltaTime * playerSpeed);
+			}
+			
+			if (keys["P"]) {
+				console.log("Im in pause");
+				paused = true;
+			} 
+
+			if (keys["J"]) {
+				secondCharacter.rotation.y += 5 * deltaTime;
+			} else if (keys["L"]) {
+				secondCharacter.rotation.y += (-5) * deltaTime;
+			}
+			if (keys["I"]) {
+				secondCharacter.translateZ(10 * deltaTime * playerSpeed);
+			} else if (keys["K"]) {
+				secondCharacter.translateZ((-10) * deltaTime * playerSpeed);
+			}
+
+			requestAnimationFrame(render);
+			renderer.render(scene, camera);
+			
+		}
+
+		function setupScene() {
+
+			var visibleSize = {
+				width: window.innerWidth,
+				height: window.innerHeight
+			};
+
+			clock = new THREE.Clock();
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color("#34495E");
+			camera = new THREE.PerspectiveCamera(75, visibleSize.width / visibleSize.height, 0.1, 300);
+			camera.position.z = 18;
+			camera.position.y = 30;
+			camera.rotation.x = -45;
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setClearColor(new THREE.Color(0, 0, 0));
+			renderer.setPixelRatio(visibleSize.width / visibleSize.height);
+			renderer.setSize(visibleSize.width, visibleSize.height);
+
+			//ILUMINACION AMBIENTAL
+
+
+			var ambiColor = "#FFFAD2";
+			var ambientLight = new THREE.AmbientLight(new THREE.Color(1, 1, 1), 1.0);
+			scene.add(ambientLight);
+
+
+			//LUZ FOCAL
+
+			var light = new THREE.SpotLight(0xE9F736);
+			light.position.set(25, 1, -32);
+			light.penumbra = .5;
+			light.target.position.set(0, 0, -32);
+			light.intensity = 4;
+			light.angle = Math.PI / 12;
+			scene.add(light.target);
+			scene.add(light);
+
+			//LUZ DE FOCO 
+
+			const light2 = new THREE.PointLight(0xE9F736, 1, 50);
+			light2.position.set(18, 1, -32);
+			scene.add(light2);
+
+			const light3 = new THREE.PointLight(0xE9F736, 1, 50);
+			light3.position.set(18, 1, -35);
+			scene.add(light3);
+
+			var directionalLight = new THREE.DirectionalLight(new THREE.Color(1, 1, 0), 0.4);
+			directionalLight.position.set(0, 0, 1);
+			scene.add(directionalLight);
+
+			var grid = new THREE.GridHelper(50, 10, 0xffffff, 0xffffff);
+			grid.position.y = -1;
+			scene.add(grid);
+
+			camera.rayos = [
+				new THREE.Vector3(1, 0, 0),
+				new THREE.Vector3(-1, 0, 0),
+				new THREE.Vector3(0, 0, 1),
+				new THREE.Vector3(0, 0, -1)
+			];			
+
+			$("#scene-section").append(renderer.domElement);
+		}
+	</script>
+</head>
+
+<body>
+	<div id="scene-section" />
+</body>
+
+</html>
