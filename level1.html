@@ -48,7 +48,40 @@
 		$(document).ready(function () {
 			
 			setupScene();
+
+			//#region Walls
+			var wallArray = [];
+
+			var wallGeometryH = new THREE.BoxGeometry(50, 5, 1);
+			var wallMaterialH = new THREE.MeshPhongMaterial({ color: "pink" });
+			var wallNorth = new THREE.Mesh(wallGeometryH, wallMaterialH);
+			wallNorth.position.set(0, 0, -2);
+			wallNorth.visible = false;
+			wallArray.push(wallNorth);
+
+			var wallSouth = wallNorth.clone();
+			wallSouth.position.set(0, 0, 25);
+			wallArray.push(wallSouth);
 			
+			var wallGeometryP = new THREE.BoxGeometry(1, 5, 50);
+			var wallMaterialP = new THREE.MeshPhongMaterial({ color: "blue" });
+			var wallWest = new THREE.Mesh(wallGeometryP, wallMaterialP);
+			wallWest.position.set(25, 0, 0);
+			wallWest.visible = false;
+			wallArray.push(wallWest);
+			
+			var wallEast = wallWest.clone();
+			wallEast.position.set(-25, 0, 0);
+			wallArray.push(wallEast);
+
+			scene.add(wallArray[0]);
+			scene.add(wallArray[1]);
+			scene.add(wallArray[2]);
+			scene.add(wallArray[3]);
+
+			//#endregion
+			
+			//#region Main Character
 			const firstCharacterGeometry = new THREE.BoxGeometry(1, 1, 1);
 			const firstCharacterMaterial = new THREE.MeshPhongMaterial({ color: "white" });
 			const firstCharacter = new THREE.Mesh(firstCharacterGeometry, firstCharacterMaterial);
@@ -56,7 +89,9 @@
 			firstCharacter.castShadow = true;
 			firstCharacter.name = "firstCharacter";
 			scene.add(firstCharacter);
+			//#endregion
 
+			//#region Second Character
 			if(gameMode == "Multijugador"){
 			const secondCharacterGeometry = new THREE.BoxGeometry(1, 1, 1);
 			const secondCharacterMaterial = new THREE.MeshPhongMaterial({ color: "red" });
@@ -66,6 +101,7 @@
 			secondCharacter.name = "secondCharacter";
 			scene.add(secondCharacter);
 			}
+			//#endregion
 			
 			render();
 
@@ -131,9 +167,9 @@
 			clock = new THREE.Clock();
 			scene = new THREE.Scene();
 			scene.background = new THREE.Color("#34495E");
-			camera = new THREE.PerspectiveCamera(75, visibleSize.width / visibleSize.height, 0.1, 300);
-			camera.position.z = 18;
-			camera.position.y = 30;
+			camera = new THREE.PerspectiveCamera(45, (visibleSize.width / visibleSize.height), 0.1, 300);
+			camera.position.z = 35;
+			camera.position.y = 50;
 			camera.rotation.x = -45;
 
 			renderer = new THREE.WebGLRenderer();
@@ -178,12 +214,6 @@
 			grid.position.y = -1;
 			scene.add(grid);
 
-			camera.rayos = [
-				new THREE.Vector3(1, 0, 0),
-				new THREE.Vector3(-1, 0, 0),
-				new THREE.Vector3(0, 0, 1),
-				new THREE.Vector3(0, 0, -1)
-			];			
 
 			$("#scene-section").append(renderer.domElement);
 		}
