@@ -29,8 +29,6 @@
 		var settings = redSettings();
 		var gameMode = settings[0].gameMode;
 
-		console.log(gameMode);
-
 		var scene;
 		var camera;
 		var renderer;
@@ -39,6 +37,15 @@
 		var deltaTime;
 		var keys = {};
 
+		//Array Objects
+		var items = [];
+
+		//Aray for FBX Animations
+		var firstCharacterArray = [];
+		var secondCharacterArray = [];
+
+
+		var LOADING_MANAGER = null;
 		var RESSOURCES_LOADED = false;
 
 		var paused = false;
@@ -82,25 +89,106 @@
 			//#endregion
 			
 			//#region Main Character
-			const firstCharacterGeometry = new THREE.BoxGeometry(1, 1, 1);
-			const firstCharacterMaterial = new THREE.MeshPhongMaterial({ color: "white" });
-			const firstCharacter = new THREE.Mesh(firstCharacterGeometry, firstCharacterMaterial);
-			firstCharacter.position.set(-3, 0, 0);
-			firstCharacter.castShadow = true;
-			firstCharacter.name = "firstCharacter";
-			scene.add(firstCharacter);
+			var fbxLoader = new THREE.FBXLoader(LOADING_MANAGER);
+			fbxLoader.load('assets/Models/Characters/guy.fbx', function (personaje) {
+				personaje.position.set(-15, 0, 0);
+				personaje.scale.set(0.045, 0.045, 0.045);
+
+				personaje.traverse(function (child) {
+					if (child.isMesh) {
+						child.castShadow = true;
+						child.receiveShadow = true;
+					}
+				});
+
+				var anim = new THREE.FBXLoader(LOADING_MANAGER);
+				anim.load('assets/Models/Characters/anim_idle.fbx', function (anim) {
+					personaje.mixer = new THREE.AnimationMixer(personaje);
+					firstCharacterArray.push(personaje.mixer);
+					var idle = personaje.mixer.clipAction(anim.animations[0]);
+					idle.play();
+				});
+				anim.load('assets/Models/Characters/anim_walk.fbx', function (anim) {
+					personaje.mixer = new THREE.AnimationMixer(personaje);
+					firstCharacterArray.push(personaje.mixer);
+					var walking = personaje.mixer.clipAction(anim.animations[0]);
+					walking.play();
+				});
+				personaje.name = "firstCharacter";
+				scene.add(personaje);
+			});
 			//#endregion
 
 			//#region Second Character
 			if(gameMode == "Multijugador"){
-			const secondCharacterGeometry = new THREE.BoxGeometry(1, 1, 1);
-			const secondCharacterMaterial = new THREE.MeshPhongMaterial({ color: "red" });
-			const secondCharacter = new THREE.Mesh(secondCharacterGeometry, secondCharacterMaterial);
-			secondCharacter.position.set(3, 0, 0);
-			secondCharacter.castShadow = true;
-			secondCharacter.name = "secondCharacter";
-			scene.add(secondCharacter);
+				fbxLoader.load('assets/Models/Characters/girl.fbx', function (personaje) {
+				personaje.position.set(15, 0, 0);
+				personaje.scale.set(0.045, 0.045, 0.045);
+
+				personaje.traverse(function (child) {
+					if (child.isMesh) {
+						child.castShadow = true;
+						child.receiveShadow = true;
+					}
+				});
+
+				var anim = new THREE.FBXLoader(LOADING_MANAGER);
+				anim.load('assets/Models/Characters/anim_idle.fbx', function (anim) {
+					personaje.mixer = new THREE.AnimationMixer(personaje);
+					secondCharacterArray.push(personaje.mixer);
+					var idle = personaje.mixer.clipAction(anim.animations[0]);
+					idle.play();
+				});
+				anim.load('assets/Models/Characters/anim_walk.fbx', function (anim) {
+					personaje.mixer = new THREE.AnimationMixer(personaje);
+					secondCharacterArray.push(personaje.mixer);
+					var walking = personaje.mixer.clipAction(anim.animations[0]);
+					walking.play();
+				});
+				personaje.name = "secondCharacter";
+				scene.add(personaje);			
+			});
 			}
+			//#endregion
+
+			//#region Objects
+
+			/*loadOBJWithMTL("assets/Models/Objects/bomba/", "less.obj", "less.mtl", (bomba) => {
+				bomba.position.set(10, 0, 0);
+				bomba.position.set(1.6, 2.6, 17);
+				bomba.scale.set(0.6, 0.6, 0.6);
+				bomba.name = "bomba";
+				items.push(bomba);
+				scene.add(bomba);
+			});*/
+
+			loadOBJWithMTL("assets/Models/Objects/lechuga/", "lechuga.obj", "lechuga.mtl", (lechuga) => {
+				lechuga.position.set(0, 0, 0);
+				lechuga.scale.set(0.9, 0.9, 0.9);
+				lechuga.rotation.y = THREE.Math.degToRad(240);
+				lechuga.name = "lechuga";
+				items.push(lechuga);
+				scene.add(lechuga);
+			});
+
+			loadOBJWithMTL("assets/Models/Objects/platano/", "platano.obj", "platano.mtl", (platano) => {
+				platano.position.set(5, 0, 0);
+				platano.scale.set(0.9, 0.9, 0.9);
+				platano.rotation.y = THREE.Math.degToRad(320);
+				platano.name = "platano";
+				items.push(platano);
+				scene.add(platano);
+			});
+
+			loadOBJWithMTL("assets/Models/Objects/zanahoria/", "zanahoria.obj", "zanahoria.mtl", (zanahoria) => {
+				zanahoria.position.set(-5, 0, 0);
+				zanahoria.scale.set(0.9, 0.9, 0.9);
+				zanahoria.rotation.y = THREE.Math.degToRad(50);
+				zanahoria.name = "zanahoria";
+				items.push(zanahoria);
+				scene.add(zanahoria);
+			});
+
 			//#endregion
 			
 			render();
@@ -110,7 +198,21 @@
 			document.addEventListener('keyup', onKeyUp);
 		});
 
-		
+		function loadOBJWithMTL(path, objFile, mtlFile, onLoadCallback) {
+			var mtlLoader = new THREE.MTLLoader(LOADING_MANAGER);
+			mtlLoader.setPath(path);
+			mtlLoader.load(mtlFile, (materials) => {
+
+				var objLoader = new THREE.OBJLoader(LOADING_MANAGER);
+				objLoader.setMaterials(materials);
+				objLoader.setPath(path);
+				objLoader.load(objFile, (object) => {
+					onLoadCallback(object);
+				});
+
+			});
+		}
+
 		function onKeyDown(event) {
 			keys[String.fromCharCode(event.keyCode)] = true;
 		}
@@ -120,11 +222,17 @@
 		}
 
 		function render() {
+
+			if (!RESSOURCES_LOADED) {
+				requestAnimationFrame(render);
+				return;
+			} else {
 			var firstCharacter = scene.getObjectByName("firstCharacter");
 			var secondCharacter = scene.getObjectByName("secondCharacter");
 			deltaTime = clock.getDelta();
 
 
+			//#region First Character Move n Animations
 			if (keys["A"]) {
 				firstCharacter.rotation.y += 5 * deltaTime;
 			} else if (keys["D"]) {
@@ -134,13 +242,23 @@
 				firstCharacter.translateZ(10 * deltaTime * playerSpeed);
 			} else if (keys["S"]) {
 				firstCharacter.translateZ((-10) * deltaTime * playerSpeed);
+				
 			}
-			
-			if (keys["P"]) {
-				console.log("Im in pause");
-				paused = true;
-			} 
 
+			if (keys["A"] || keys["W"] || keys["S"] || keys["D"]) {
+				if (firstCharacterArray.length > 0) {
+					firstCharacterArray[1].update(deltaTime);
+				}
+			} 
+			else {
+				if (firstCharacterArray.length > 0) {
+					firstCharacterArray[0].update(deltaTime);
+				}
+			}
+			//#endregion
+			
+			
+			//#region First Character Move n Animations
 			if (keys["J"]) {
 				secondCharacter.rotation.y += 5 * deltaTime;
 			} else if (keys["L"]) {
@@ -152,12 +270,41 @@
 				secondCharacter.translateZ((-10) * deltaTime * playerSpeed);
 			}
 
+			if (keys["J"] || keys["K"] || keys["L"] || keys["I"]) {
+				if (secondCharacterArray.length > 0) {
+					secondCharacterArray[1].update(deltaTime);
+				}
+			} else {
+				if (secondCharacterArray.length > 0) {
+					secondCharacterArray[0].update(deltaTime);
+				}
+			}
+			//#endregion
+
 			requestAnimationFrame(render);
 			renderer.render(scene, camera);
+		}
 			
 		}
 
 		function setupScene() {
+
+			LOADING_MANAGER = new THREE.LoadingManager();
+			LOADING_MANAGER = new THREE.LoadingManager();
+
+			const progressBar = document.getElementById("progress-bar");
+			const progressBarContainer = document.getElementById("progress-bar-container");
+
+			LOADING_MANAGER.onProgress = function (url, loaded, total) {
+				progressBar.value = (loaded / total) * 100;
+			}
+
+			LOADING_MANAGER.onLoad = function () {
+
+
+				$(".progress-bar-container").hide();
+				RESSOURCES_LOADED = true;
+			}
 
 			var visibleSize = {
 				width: window.innerWidth,
@@ -222,6 +369,11 @@
 
 <body>
 	<div id="scene-section" />
+
+	<div class="progress-bar-container">
+		<label for="progress-bar">Cargando...</label>
+		<progress id="progress-bar" value="0" max="100"></progress>
+	</div>
 </body>
 
 </html>

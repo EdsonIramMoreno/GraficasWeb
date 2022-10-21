@@ -1,0 +1,18 @@
+newmtl SpinyFBXASC032EggSG2
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd bright-red-lava-burmagma.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl SpinyFBXASC032EggSG3
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd descarga2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
