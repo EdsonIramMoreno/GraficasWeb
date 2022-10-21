@@ -1,5 +1,6 @@
 <html>
 <html lang="es">
+
 <head>
 
 	<title>Juego</title>
@@ -53,7 +54,7 @@
 		var playerSpeed = 1;
 
 		$(document).ready(function () {
-			
+
 			setupScene();
 
 			//#region Walls
@@ -69,14 +70,14 @@
 			var wallSouth = wallNorth.clone();
 			wallSouth.position.set(0, 0, 25);
 			wallArray.push(wallSouth);
-			
+
 			var wallGeometryP = new THREE.BoxGeometry(1, 5, 50);
 			var wallMaterialP = new THREE.MeshPhongMaterial({ color: "blue" });
 			var wallWest = new THREE.Mesh(wallGeometryP, wallMaterialP);
 			wallWest.position.set(25, 0, 0);
 			wallWest.visible = false;
 			wallArray.push(wallWest);
-			
+
 			var wallEast = wallWest.clone();
 			wallEast.position.set(-25, 0, 0);
 			wallArray.push(wallEast);
@@ -87,7 +88,7 @@
 			scene.add(wallArray[3]);
 
 			//#endregion
-			
+
 			//#region Main Character
 			var fbxLoader = new THREE.FBXLoader(LOADING_MANAGER);
 			fbxLoader.load('assets/Models/Characters/guy.fbx', function (personaje) {
@@ -120,34 +121,34 @@
 			//#endregion
 
 			//#region Second Character
-			if(gameMode == "Multijugador"){
+			if (gameMode == "Multijugador") {
 				fbxLoader.load('assets/Models/Characters/girl.fbx', function (personaje) {
-				personaje.position.set(15, 0, 0);
-				personaje.scale.set(0.045, 0.045, 0.045);
+					personaje.position.set(15, 0, 0);
+					personaje.scale.set(0.045, 0.045, 0.045);
 
-				personaje.traverse(function (child) {
-					if (child.isMesh) {
-						child.castShadow = true;
-						child.receiveShadow = true;
-					}
-				});
+					personaje.traverse(function (child) {
+						if (child.isMesh) {
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					});
 
-				var anim = new THREE.FBXLoader(LOADING_MANAGER);
-				anim.load('assets/Models/Characters/anim_idle.fbx', function (anim) {
-					personaje.mixer = new THREE.AnimationMixer(personaje);
-					secondCharacterArray.push(personaje.mixer);
-					var idle = personaje.mixer.clipAction(anim.animations[0]);
-					idle.play();
+					var anim = new THREE.FBXLoader(LOADING_MANAGER);
+					anim.load('assets/Models/Characters/anim_idle.fbx', function (anim) {
+						personaje.mixer = new THREE.AnimationMixer(personaje);
+						secondCharacterArray.push(personaje.mixer);
+						var idle = personaje.mixer.clipAction(anim.animations[0]);
+						idle.play();
+					});
+					anim.load('assets/Models/Characters/anim_walk.fbx', function (anim) {
+						personaje.mixer = new THREE.AnimationMixer(personaje);
+						secondCharacterArray.push(personaje.mixer);
+						var walking = personaje.mixer.clipAction(anim.animations[0]);
+						walking.play();
+					});
+					personaje.name = "secondCharacter";
+					scene.add(personaje);
 				});
-				anim.load('assets/Models/Characters/anim_walk.fbx', function (anim) {
-					personaje.mixer = new THREE.AnimationMixer(personaje);
-					secondCharacterArray.push(personaje.mixer);
-					var walking = personaje.mixer.clipAction(anim.animations[0]);
-					walking.play();
-				});
-				personaje.name = "secondCharacter";
-				scene.add(personaje);			
-			});
 			}
 			//#endregion
 
@@ -190,7 +191,7 @@
 			});
 
 			//#endregion
-			
+
 			render();
 
 
@@ -227,64 +228,64 @@
 				requestAnimationFrame(render);
 				return;
 			} else {
-			var firstCharacter = scene.getObjectByName("firstCharacter");
-			var secondCharacter = scene.getObjectByName("secondCharacter");
-			deltaTime = clock.getDelta();
+				var firstCharacter = scene.getObjectByName("firstCharacter");
+				var secondCharacter = scene.getObjectByName("secondCharacter");
+				deltaTime = clock.getDelta();
 
 
-			//#region First Character Move n Animations
-			if (keys["A"]) {
-				firstCharacter.rotation.y += 5 * deltaTime;
-			} else if (keys["D"]) {
-				firstCharacter.rotation.y += (-5) * deltaTime;
-			}
-			if (keys["W"]) {
-				firstCharacter.translateZ(10 * deltaTime * playerSpeed);
-			} else if (keys["S"]) {
-				firstCharacter.translateZ((-10) * deltaTime * playerSpeed);
-				
-			}
-
-			if (keys["A"] || keys["W"] || keys["S"] || keys["D"]) {
-				if (firstCharacterArray.length > 0) {
-					firstCharacterArray[1].update(deltaTime);
+				//#region First Character Move n Animations
+				if (keys["A"]) {
+					firstCharacter.rotation.y += 5 * deltaTime;
+				} else if (keys["D"]) {
+					firstCharacter.rotation.y += (-5) * deltaTime;
 				}
-			} 
-			else {
-				if (firstCharacterArray.length > 0) {
-					firstCharacterArray[0].update(deltaTime);
+				if (keys["W"]) {
+					firstCharacter.translateZ(10 * deltaTime * playerSpeed);
+				} else if (keys["S"]) {
+					firstCharacter.translateZ((-10) * deltaTime * playerSpeed);
+
 				}
-			}
-			//#endregion
-			
-			
-			//#region First Character Move n Animations
-			if (keys["J"]) {
-				secondCharacter.rotation.y += 5 * deltaTime;
-			} else if (keys["L"]) {
-				secondCharacter.rotation.y += (-5) * deltaTime;
-			}
-			if (keys["I"]) {
-				secondCharacter.translateZ(10 * deltaTime * playerSpeed);
-			} else if (keys["K"]) {
-				secondCharacter.translateZ((-10) * deltaTime * playerSpeed);
+
+				if (keys["A"] || keys["W"] || keys["S"] || keys["D"]) {
+					if (firstCharacterArray.length > 0) {
+						firstCharacterArray[1].update(deltaTime);
+					}
+				}
+				else {
+					if (firstCharacterArray.length > 0) {
+						firstCharacterArray[0].update(deltaTime);
+					}
+				}
+				//#endregion
+
+
+				//#region First Character Move n Animations
+				if (keys["J"]) {
+					secondCharacter.rotation.y += 5 * deltaTime;
+				} else if (keys["L"]) {
+					secondCharacter.rotation.y += (-5) * deltaTime;
+				}
+				if (keys["I"]) {
+					secondCharacter.translateZ(10 * deltaTime * playerSpeed);
+				} else if (keys["K"]) {
+					secondCharacter.translateZ((-10) * deltaTime * playerSpeed);
+				}
+
+				if (keys["J"] || keys["K"] || keys["L"] || keys["I"]) {
+					if (secondCharacterArray.length > 0) {
+						secondCharacterArray[1].update(deltaTime);
+					}
+				} else {
+					if (secondCharacterArray.length > 0) {
+						secondCharacterArray[0].update(deltaTime);
+					}
+				}
+				//#endregion
+
+				requestAnimationFrame(render);
+				renderer.render(scene, camera);
 			}
 
-			if (keys["J"] || keys["K"] || keys["L"] || keys["I"]) {
-				if (secondCharacterArray.length > 0) {
-					secondCharacterArray[1].update(deltaTime);
-				}
-			} else {
-				if (secondCharacterArray.length > 0) {
-					secondCharacterArray[0].update(deltaTime);
-				}
-			}
-			//#endregion
-
-			requestAnimationFrame(render);
-			renderer.render(scene, camera);
-		}
-			
 		}
 
 		function setupScene() {
@@ -311,9 +312,25 @@
 				height: window.innerHeight
 			};
 
+			// Plane
+
+			const texture = new THREE.TextureLoader().load("assets/Images/nivel/background.png");
+
+			// immediately use the texture for material creation
+			const planeMaterial = new THREE.MeshBasicMaterial({ map: texture });
+			const planeGeometry = new THREE.PlaneGeometry(400, 400);
+			
+			const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+			plane.position.set(0, 0, 0);
+			plane.receiveShadow = true;
+			plane.rotateX(-Math.PI / 2);
+
+
+
 			clock = new THREE.Clock();
 			scene = new THREE.Scene();
 			scene.background = new THREE.Color("#34495E");
+	
 			camera = new THREE.PerspectiveCamera(45, (visibleSize.width / visibleSize.height), 0.1, 300);
 			camera.position.z = 35;
 			camera.position.y = 50;
@@ -357,11 +374,11 @@
 			directionalLight.position.set(0, 0, 1);
 			scene.add(directionalLight);
 
-			var grid = new THREE.GridHelper(50, 10, 0xffffff, 0xffffff);
-			grid.position.y = -1;
-			scene.add(grid);
+			// var grid = new THREE.GridHelper(50, 10, 0xffffff, 0xffffff);
+			// grid.position.y = -1;
+			// scene.add(grid);
 
-
+			scene.add(plane);
 			$("#scene-section").append(renderer.domElement);
 		}
 	</script>
