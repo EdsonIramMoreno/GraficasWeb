@@ -6,13 +6,13 @@
 	<link rel="stylesheet" href="css/juego.css">
 	<link rel="stylesheet" href="css/menus.css">
 
-	<script type="text/javascript" src="libs/jquery/jquery-2.1.4.min.js"></script>
-	<script type="text/javascript" src="libs/three/three2.js"></script>
-	<script type="text/javascript" src="libs/menus/menu.js"></script>
-	<script type="text/javascript" src="libs/three/MTLLoader.js"></script>
-	<script type="text/javascript" src="libs/three/OBJLoader.js"></script>
-	<script type="text/javascript" src="libs/three/FBXLoader.js"></script>
-	<script type="text/javascript" src="libs/three/inflate.min.js"></script>
+	<script type="text/javascript" src="./libs/jquery/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="./libs/three/three2.js"></script>
+	<script type="text/javascript" src="./libs/menus/menu.js"></script>
+	<script type="text/javascript" src="./libs/three/MTLLoader.js"></script>
+	<script type="text/javascript" src="./libs/three/OBJLoader.js"></script>
+	<script type="text/javascript" src="./libs/three/FBXLoader.js"></script>
+	<script type="text/javascript" src="./libs/three/inflate.min.js"></script>
 	<script type="text/javascript">
 		function redSettings() {
 			var storedList = localStorage.getItem("settings");
@@ -23,11 +23,75 @@
 			}
 			return settings;
 		};
+
+		function send(name, score) {
+			var url ="";
+			if(gameMode == "Supervivencia")
+				url = "https://graficasweb.azurewebsites.net/api/SurvivalScores/AddScore";
+			else
+				url = "https://graficasweb.azurewebsites.net/api/ClassicScores/AddScore";
+			var request = { 'USER_NAME': name, 'USER_SCORE': score };
+			$.ajax({
+				url: url,
+				type: "post",
+				data: JSON.stringify(request),
+				dataType : "json",
+				contentType:"application/json; charset=utf-8",
+				success: function (data) {
+					//alert(JSON.stringify(data));
+				},
+				error: function (x, y, z) {
+					//alert("Error webservice" + x + ": " + y + ": " + z);
+				}
+			})
+		}
+
+		function hide_pause(){
+			$("#modal_pausa").hide("slow");
+		};
+
+		function lvlLoad(){
+			if(game == "Individual"){
+				$("#p_Player2").hide();
+				$("#pts_Player2").hide();
+				$("#item_Player2").hide();
+			}
+			else{
+				$("#label_Player2").text(playersNames[1]);
+			}
+			$("#label_Player1").text(playersNames[0]);
+
+			if(gameMode == "Supervivencia"){
+				$("#Clock").hide();
+			}
+
+			if(soundEffects == "ON")
+				$("#btn_sound_e").css("opacity", .5);
+			else
+				$("#btn_mute_e").css("opacity", .5);
+
+			if(music == "ON")
+				$("#btn_sound_m").css("opacity", .5);
+			else
+				$("#btn_mute_m").css("opacity", .5);
+
+			if(dificulty == "principiante")
+				playerSpeed = 1;
+			else
+				playerSpeed = .75;
+		}
+
 	</script>
 	<script type="text/javascript">
 
 		var settings = redSettings();
+		var game = settings[0].game;
 		var gameMode = settings[0].gameMode;
+		var music = settings[0].music;
+		var soundEffects = settings[0].soundEffects;
+		var playersNames = settings[0].playersNames;
+		var stage = settings[0].stage;
+		var dificulty = settings[0].dificulty;
 
 		var scene;
 		var camera;
@@ -37,63 +101,102 @@
 		var deltaTime;
 		var keys = {};
 
-		//Array Objects
-		var items = [];
-
-		//Aray for FBX Animations
+		//Array for FBX Animations
 		var firstCharacterArray = [];
 		var secondCharacterArray = [];
 
+		var isFirstPlayerAlive = true;
+		var isSecondPlayerAlive = true;
+
+
+		//Items variables
+		var items = [];
+		var randItem = [];
+		var itemShadow = [];
+		var itemShow = false;
+		var contadorMod = 0;
+		var contadorMov = 0;
+		var vBomb;
+		var vStar;
+		var vCoin;
+		var vShadow;
+
+		var timer = 10;
+
+		//Collisions
+		var rayCaster;
+		var objetosConColision = [];
+		var boxCollision = [];
 
 		var LOADING_MANAGER = null;
 		var RESSOURCES_LOADED = false;
 
 		var paused = false;
 
-		var playerSpeed = 1;
+		var playerSpeed = 0;
 
 		$(document).ready(function () {
 			
 			setupScene();
 
+			rayCaster = new THREE.Raycaster();
+
+			//Shadows
+			const geometryShadow = new THREE.CircleGeometry( );
+			const materialShadow = new THREE.MeshBasicMaterial( { color: 0x808080 } );
+			const shadow = new THREE.Mesh( geometryShadow, materialShadow );
+			shadow.rotation.x = THREE.Math.degToRad(270);
+			vShadow = shadow;
+
+			var a = new THREE.BoxGeometry(1, 1, 1);
+			var aMat = new THREE.MeshLambertMaterial({
+				color: new THREE.Color(.5, .5, 1)
+			});
+
 			//#region Walls
-			var wallArray = [];
+			var boxMasterGeo = new THREE.BoxGeometry(100, 2, 2);
+			var boxMasterGeo2 = new THREE.BoxGeometry(2, 2, 60);
+			var boxMaterial = new THREE.MeshLambertMaterial({
+				color: new THREE.Color(.5, .5, 1)
+			});
 
-			var wallGeometryH = new THREE.BoxGeometry(50, 5, 1);
-			var wallMaterialH = new THREE.MeshPhongMaterial({ color: "pink" });
-			var wallNorth = new THREE.Mesh(wallGeometryH, wallMaterialH);
-			wallNorth.position.set(0, 0, -2);
-			wallNorth.visible = false;
-			wallArray.push(wallNorth);
+			topWall = new THREE.Mesh(boxMasterGeo, boxMaterial);
+			topWall.position.set(0, 0, -16);
+			topWall.visible = false;
+			scene.add(topWall);
+			var firstBB18 = new THREE.Box3().setFromObject(topWall);
+			boxCollision.push(firstBB18);
 
-			var wallSouth = wallNorth.clone();
-			wallSouth.position.set(0, 0, 25);
-			wallArray.push(wallSouth);
-			
-			var wallGeometryP = new THREE.BoxGeometry(1, 5, 50);
-			var wallMaterialP = new THREE.MeshPhongMaterial({ color: "blue" });
-			var wallWest = new THREE.Mesh(wallGeometryP, wallMaterialP);
-			wallWest.position.set(25, 0, 0);
-			wallWest.visible = false;
-			wallArray.push(wallWest);
-			
-			var wallEast = wallWest.clone();
-			wallEast.position.set(-25, 0, 0);
-			wallArray.push(wallEast);
+			var leftWall = new THREE.Mesh(boxMasterGeo2, boxMaterial);
+			leftWall.position.set(34, 0, 0);
+			leftWall.visible = false;
+			scene.add(leftWall);
 
-			scene.add(wallArray[0]);
-			scene.add(wallArray[1]);
-			scene.add(wallArray[2]);
-			scene.add(wallArray[3]);
+			var firstBB19 = new THREE.Box3().setFromObject(leftWall);
+			boxCollision.push(firstBB19);
+
+			var rightWall = leftWall.clone();
+			rightWall.position.set(-35, 0, 0);
+			scene.add(rightWall);
+
+			var firstBB20 = new THREE.Box3().setFromObject(rightWall);
+			boxCollision.push(firstBB20);
+
+			var buttomWall = topWall.clone();
+			buttomWall.position.set(0, 0, 21);
+			scene.add(buttomWall);
+
+			var firstBB21 = new THREE.Box3().setFromObject(buttomWall);
+			boxCollision.push(firstBB21);
 
 			//#endregion
 			
 			//#region Main Character
 			var fbxLoader = new THREE.FBXLoader(LOADING_MANAGER);
 			fbxLoader.load('assets/Models/Characters/guy.fbx', function (personaje) {
-				personaje.position.set(-15, 0, 0);
-				personaje.scale.set(0.045, 0.045, 0.045);
-
+				personaje.position.set(-10.5, 0, 0);
+				personaje.scale.set(0.035, 0.035, 0.035)
+				
 				personaje.traverse(function (child) {
 					if (child.isMesh) {
 						child.castShadow = true;
@@ -116,14 +219,29 @@
 				});
 				personaje.name = "firstCharacter";
 				scene.add(personaje);
+
+				objetosConColision.push(personaje);
+
+				var boxMasterGeo5 = new THREE.BoxGeometry(70, 140, 70);
+				var boxMaterial5 = new THREE.MeshLambertMaterial({
+					color: new THREE.Color(.5, .5, 1)
+				});
+
+				boxMaster101 = new THREE.Mesh(boxMasterGeo5, boxMaterial5);
+				boxMaster101.position.set(0, 80, 0);
+				boxMaster101.name = "Collision_firstCharacter";
+				personaje.add(boxMaster101);
+				objetosConColision.push(boxMaster101);
+				boxMaster101.visible = false;
+
 			});
 			//#endregion
 
 			//#region Second Character
-			if(gameMode == "Multijugador"){
+			if(game == "Multijugador"){
 				fbxLoader.load('assets/Models/Characters/girl.fbx', function (personaje) {
-				personaje.position.set(15, 0, 0);
-				personaje.scale.set(0.045, 0.045, 0.045);
+					personaje.position.set(13.5, 0, 0);
+					personaje.scale.set(0.035, 0.035, 0.035);
 
 				personaje.traverse(function (child) {
 					if (child.isMesh) {
@@ -146,49 +264,81 @@
 					walking.play();
 				});
 				personaje.name = "secondCharacter";
-				scene.add(personaje);			
+				scene.add(personaje);	
+				
+				objetosConColision.push(personaje);
+
+				var boxMasterGeo5 = new THREE.BoxGeometry(70, 140, 70);
+				var boxMaterial5 = new THREE.MeshLambertMaterial({
+					color: new THREE.Color(.5, .5, 1)
+				});
+
+				boxMaster10 = new THREE.Mesh(boxMasterGeo5, boxMaterial5);
+				boxMaster10.position.set(0, 80, 0);
+				boxMaster10.name = "Collision_secondCharacter";
+				personaje.add(boxMaster10);
+				objetosConColision.push(boxMaster10);
+
+				boxMaster10.visible = false;
 			});
 			}
 			//#endregion
 
 			//#region Objects
 
-			/*loadOBJWithMTL("assets/Models/Objects/bomba/", "less.obj", "less.mtl", (bomba) => {
-				bomba.position.set(10, 0, 0);
-				bomba.position.set(1.6, 2.6, 17);
+			loadOBJWithMTL("assets/Models/Objects/wall/", "wall.obj", "wall.mtl", (wall) => {
+				wall.position.set(-2.5, 0, 4);
+				wall.scale.set(0.2, 0.1, 0.25);
+				wall.rotation.y = THREE.Math.degToRad(90);
+				
+				scene.add(wall);
+			});
+
+			loadOBJWithMTL("assets/Models/Objects/floor/", "floor.obj", "floor.mtl", (floor) => {
+				floor.position.set(-2.5, 0, 4);
+				floor.scale.set(0.2, 0.1, 0.25);
+				floor.rotation.y = THREE.Math.degToRad(90);
+				
+				scene.add(floor);
+			});
+
+			loadOBJWithMTL("assets/Models/Objects/bomba/", "less.obj", "less.mtl", (bomba) => {
+				bomba.position.set(0, 30, 0);
 				bomba.scale.set(0.6, 0.6, 0.6);
-				bomba.name = "bomba";
-				items.push(bomba);
-				scene.add(bomba);
-			});*/
-
-			loadOBJWithMTL("assets/Models/Objects/lechuga/", "lechuga.obj", "lechuga.mtl", (lechuga) => {
-				lechuga.position.set(0, 0, 0);
-				lechuga.scale.set(0.9, 0.9, 0.9);
-				lechuga.rotation.y = THREE.Math.degToRad(240);
-				lechuga.name = "lechuga";
-				items.push(lechuga);
-				scene.add(lechuga);
+				bomba.name = "bomb";
+				
+				bomba.traverse(function (child) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+				});
+				
+				vBomb = bomba;
+				items.push(vBomb);
+				if(dificulty == "avanzado"){
+					items.push(vBomb);
+					items.push(vBomb);
+				}
 			});
 
-			loadOBJWithMTL("assets/Models/Objects/platano/", "platano.obj", "platano.mtl", (platano) => {
-				platano.position.set(5, 0, 0);
-				platano.scale.set(0.9, 0.9, 0.9);
-				platano.rotation.y = THREE.Math.degToRad(320);
-				platano.name = "platano";
-				items.push(platano);
-				scene.add(platano);
+			loadOBJWithMTL("assets/Models/Objects/star/", "star.obj", "star.mtl", (star) => {
+				star.position.set(0, 25, 0);
+				star.scale.set(0.6, 0.6, 0.6);
+				star.name = "star";
+				vStar = star;
+				items.push(vStar);
+				if(dificulty == "principiante")
+					items.push(vStar);
 			});
 
-			loadOBJWithMTL("assets/Models/Objects/zanahoria/", "zanahoria.obj", "zanahoria.mtl", (zanahoria) => {
-				zanahoria.position.set(-5, 0, 0);
-				zanahoria.scale.set(0.9, 0.9, 0.9);
-				zanahoria.rotation.y = THREE.Math.degToRad(50);
-				zanahoria.name = "zanahoria";
-				items.push(zanahoria);
-				scene.add(zanahoria);
+			loadOBJWithMTL("assets/Models/Objects/coin/", "coin.obj", "coin.mtl", (coin) => {
+				coin.position.set(0, 25, 0);
+				coin.scale.set(0.6, 0.6, 0.6);
+				coin.name = "coin";
+				vCoin = coin;
+				items.push(vCoin);
+				if(dificulty == "principiante")
+					items.push(vCoin);
 			});
-
 			//#endregion
 			
 			render();
@@ -212,7 +362,7 @@
 
 			});
 		}
-
+		
 		function onKeyDown(event) {
 			keys[String.fromCharCode(event.keyCode)] = true;
 		}
@@ -225,69 +375,324 @@
 
 			if (!RESSOURCES_LOADED) {
 				requestAnimationFrame(render);
+				$("#loadScreen").show();
 				return;
 			} else {
-			var firstCharacter = scene.getObjectByName("firstCharacter");
-			var secondCharacter = scene.getObjectByName("secondCharacter");
-			deltaTime = clock.getDelta();
+				$("#HUD").show();
+				$("#loadScreen").hide();
+
+				deltaTime = clock.getDelta();
+				if(!paused){
+
+					//#region  Clasico
+					if(gameMode == "Clasico" && timer <= 0){
+						$("#modal_GameOver").fadeToggle("slow");
+
+						var firstCharacterScore = Math.floor(document.getElementById("pts_Player1").innerText);
+
+						if(game == "Multijugador"){
+							var SecondCharacterScore = Math.floor(document.getElementById("pts_Player2").innerText);
+
+							if (firstCharacterScore > SecondCharacterScore) {
+								document.getElementById("titulo").innerText = "El ganador es:";
+								document.getElementById("ganador").innerText = playersNames[0];
+								send(playersNames[0], firstCharacterScore);
+							}
+							else if (SecondCharacterScore > firstCharacterScore) {
+								document.getElementById("titulo").innerText = "El ganador es:";
+								document.getElementById("ganador").innerText = playersNames[1];
+								send(playersNames[1], secondCharacterScore);
+							}
+							else {
+								document.getElementById("titulo").innerText = "Empate";
+							}
+						}
+						else{
+							document.getElementById("titulo").innerText = "La puntuacion total fue:";
+							document.getElementById("ganador").innerText = firstCharacterScore;
+							send(playersNames[0], firstCharacterScore);
+						}
+
+						paused = true;
+					}
+					//#endregion
+
+					//#region Supervivencia
+					if(gameMode == "Supervivencia"){
+						var firstCharacterScore = Math.floor(document.getElementById("pts_Player1").innerText);
+						if(game == "Individual"){
+							if(!isFirstPlayerAlive){
+								$("#modal_GameOver").fadeToggle("slow");
+								document.getElementById("titulo").innerText = "La puntuacion total fue:";
+								document.getElementById("ganador").innerText = firstCharacterScore;
+								document.getElementById("btn_compartir").style.display = "block";
+								send(playersNames[0], firstCharacterScore);
+								paused = true;
+							}
+						}
+						else{
+							var SecondCharacterScore = Math.floor(document.getElementById("pts_Player2").innerText);
+							if(!isFirstPlayerAlive && !isSecondPlayerAlive){
+								$("#modal_GameOver").fadeToggle("slow");
+								if (firstCharacterScore > SecondCharacterScore) {
+									document.getElementById("titulo").innerText = "El ganador es:";
+									document.getElementById("ganador").innerText = playersNames[0];
+									document.getElementById("btn_compartir").style.display = "block";
+									send(playersNames[0],firstCharacterScore);
+								}
+								else if (SecondCharacterScore > firstCharacterScore) {
+									document.getElementById("titulo").innerText = "El ganador es:";
+									document.getElementById("ganador").innerText = playersNames[1];
+									document.getElementById("btn_compartir").style.display = "block";
+									send(playersNames[1], SecondCharacterScore);
+								}
+								paused = true;
+							}
+						}
+					}
+					//#endregion
 
 
-			//#region First Character Move n Animations
-			if (keys["A"]) {
-				firstCharacter.rotation.y += 5 * deltaTime;
-			} else if (keys["D"]) {
-				firstCharacter.rotation.y += (-5) * deltaTime;
-			}
-			if (keys["W"]) {
-				firstCharacter.translateZ(10 * deltaTime * playerSpeed);
-			} else if (keys["S"]) {
-				firstCharacter.translateZ((-10) * deltaTime * playerSpeed);
-				
-			}
+					var firstCharacter = scene.getObjectByName("firstCharacter");
+					var secondCharacter = scene.getObjectByName("secondCharacter");
 
-			if (keys["A"] || keys["W"] || keys["S"] || keys["D"]) {
-				if (firstCharacterArray.length > 0) {
-					firstCharacterArray[1].update(deltaTime);
+					//Collisions Characters
+					var collisionFirstCharacter = scene.getObjectByName("Collision_firstCharacter");
+					var collisionSecondCharacter = scene.getObjectByName("Collision_secondCharacter");
+					timer -= deltaTime;
+					document.getElementById("Time").innerText = Math.trunc(timer);
+
+					//#region Wall collision
+					if (firstCharacter) {
+						for (var i = 0; i < boxCollision.length; i++) {
+							var twoBB = new THREE.Box3().setFromObject(collisionFirstCharacter);
+							var collision = boxCollision[i].intersectsBox(twoBB);
+							if (collision) {
+								firstCharacter.position.set(posXZ[0], firstCharacter.position.y, posXZ[1]);
+							}
+						}
+						}
+						posXZ = [firstCharacter.position.x, firstCharacter.position.z];
+						
+						if (secondCharacter) {
+							for (var i = 0; i < boxCollision.length; i++) {
+								var twoBB = new THREE.Box3().setFromObject(collisionSecondCharacter);
+								var collision = boxCollision[i].intersectsBox(twoBB);
+								if (collision) {
+									secondCharacter.position.set(posXZ2[0], secondCharacter.position.y, posXZ2[1]);
+								}
+							}
+							
+							posXZ2 = [secondCharacter.position.x, secondCharacter.position.z];
+						}
+						//#endregion
+						
+					//#region First Character Move n Animations
+					if(isFirstPlayerAlive){
+						if (keys["A"]) {
+							firstCharacter.rotation.y += 5 * deltaTime;
+						} else if (keys["D"]) {
+							firstCharacter.rotation.y += (-5) * deltaTime;
+						}
+						if (keys["W"]) {
+							firstCharacter.translateZ(10 * deltaTime * playerSpeed);
+						} else if (keys["S"]) {
+							firstCharacter.translateZ((-10) * deltaTime * playerSpeed);
+						}
+
+						if (keys["A"] || keys["W"] || keys["S"] || keys["D"]) {
+							if (firstCharacterArray.length > 0) {
+								firstCharacterArray[1].update(deltaTime);
+							}
+						} 
+						else {
+							if (firstCharacterArray.length > 0) {
+								firstCharacterArray[0].update(deltaTime);
+							}
+						}
+					}
+					//#endregion
+									
+					//#region Second Character Move n Animations
+					if(isSecondPlayerAlive){
+						if (keys["J"]) {
+							secondCharacter.rotation.y += 5 * deltaTime;
+						} else if (keys["L"]) {
+							secondCharacter.rotation.y += (-5) * deltaTime;
+						}
+						if (keys["I"]) {
+							secondCharacter.translateZ(10 * deltaTime * playerSpeed);
+						} else if (keys["K"]) {
+							secondCharacter.translateZ((-10) * deltaTime * playerSpeed);
+						}
+						if (keys["J"] || keys["K"] || keys["L"] || keys["I"]) {
+							if (secondCharacterArray.length > 0) {
+								secondCharacterArray[1].update(deltaTime);
+							}
+						} else {
+							if (secondCharacterArray.length > 0) {
+								secondCharacterArray[0].update(deltaTime);
+							}
+						}
+					}
+					//#endregion
+
+					//#region Items
+					if (itemShow == false) {
+						contadorMod += deltaTime;
+						contadorMov += deltaTime;
+						if (contadorMod >= 0.5) {
+							itemShow = true;
+							var i = Math.floor(Math.random() * items.length);
+							randItem.push(items[i].clone());
+							itemShadow.push(vShadow.clone());
+							var xPos = Math.floor(Math.random() * 65);
+							xPos -= 35;
+							var zPos = Math.floor(Math.random() * 35);
+							zPos -= 15;
+							randItem[randItem.length - 1].position.set(xPos, randItem[randItem.length - 1].position.y, zPos);
+							itemShadow[itemShadow.length -1].position.set(xPos,itemShadow[itemShadow.length -1].position.y, zPos);
+							scene.add(randItem[randItem.length - 1]);
+							scene.add(itemShadow[itemShadow.length -1]);
+							contadorMod = 0;
+						}
+					}
+
+					if (itemShow == true) {
+						contadorMod += deltaTime;
+						contadorMov += deltaTime;
+						for (var i = 0; i < randItem.length; i++) {
+							if (contadorMov >= 3) {
+								itemShow = false;
+								contadorMov = 0;
+							}
+
+							if (randItem[i].position.y > -.05) {
+								randItem[i].position.y -= 6 * deltaTime;
+							} else {
+								scene.remove(randItem[i]);
+								scene.remove(itemShadow[i]);
+								randItem.shift();
+								itemShadow.shift();
+							}
+						}
+					}
+					//#endregion
+
+					//#region ItemCollisionFirstCharacter
+					for (var i = 0; i < randItem.length; i++) {
+						if (randItem[i] && firstCharacter) {
+							var boxCollision_1 = new THREE.Box3().setFromObject(collisionFirstCharacter);
+							var itemCollision = new THREE.Box3().setFromObject(randItem[i]);
+
+							var collisionFirstCharacterItem = itemCollision.intersectsBox(boxCollision_1);
+							
+							if (collisionFirstCharacterItem) {
+								
+								if (soundEffects == "ON") {
+									document.getElementById("item_sound").play();
+								}
+
+								var pts = Math.floor(document.getElementById("pts_Player1").innerText);
+									switch (randItem[i].name) {
+										case "star":
+											document.getElementById("pts_Player1").innerText = pts + 1;
+										break;
+										case "bomb":
+											if(pts - 1 > 0)
+												document.getElementById("pts_Player1").innerText = pts - 1;
+											if(gameMode == "Supervivencia"){
+												isFirstPlayerAlive = false;
+												firstCharacter.position.y = -10;
+											}
+										break;
+										case "coin":
+											document.getElementById("pts_Player1").innerText = pts + 1;
+										break;
+									}
+									
+								scene.remove(itemShadow[i]);
+								scene.remove(randItem[i]);
+								randItem.splice(i, 1);
+								itemShadow.splice(i,1);
+								
+								itemShow = false;
+								contadorMov = 0;
+
+							} 
+							
+						}
+					}
+					//#endregion
+					
+					//#region ItemCollisionFirstCharacter
+					if(secondCharacter){
+						for (var i = 0; i < randItem.length; i++) {
+							if (randItem[i]) {
+								var boxCollision_2 = new THREE.Box3().setFromObject(collisionSecondCharacter);
+								var itemCollision = new THREE.Box3().setFromObject(randItem[i]);
+								
+								var collisionSecondCharacterItem = itemCollision.intersectsBox(boxCollision_2);
+								
+								if (collisionSecondCharacterItem) {
+									
+									if (soundEffects == "ON") {
+										document.getElementById("item_sound").play();
+									}
+									
+									var pts = Math.floor(document.getElementById("pts_Player2").innerText);
+									switch (randItem[i].name) {
+										case "star":
+											document.getElementById("pts_Player2").innerText = pts + 1;
+											break;
+											case "bomb":
+											if(pts - 1 > 0)
+												document.getElementById("pts_Player2").innerText = pts - 1;
+											if(gameMode == "Supervivencia"){
+												isSecondPlayerAlive = false;
+												secondCharacter.position.y = -10;
+											}
+											break;
+											case "coin":
+												document.getElementById("pts_Player2").innerText = pts + 1;
+												break;
+									}
+
+									scene.remove(itemShadow[i]);
+									scene.remove(randItem[i]);
+									randItem.splice(i, 1);
+									itemShadow.splice(i,1);
+									
+									itemShow = false;
+									contadorMov = 0;
+
+								} 
+								
+							}
+						}
+					}
+					//#endregion
+					
+
+					//Input PAUSA
+					if (keys["P"]) {
+						$("#modal_pausa").show("slow");
+						paused = true;
+					} 
 				}
-			} 
-			else {
-				if (firstCharacterArray.length > 0) {
-					firstCharacterArray[0].update(deltaTime);
+				else{
+					timer += deltaTime;
+					timer -= deltaTime;
 				}
-			}
-			//#endregion
-			
-			
-			//#region First Character Move n Animations
-			if (keys["J"]) {
-				secondCharacter.rotation.y += 5 * deltaTime;
-			} else if (keys["L"]) {
-				secondCharacter.rotation.y += (-5) * deltaTime;
-			}
-			if (keys["I"]) {
-				secondCharacter.translateZ(10 * deltaTime * playerSpeed);
-			} else if (keys["K"]) {
-				secondCharacter.translateZ((-10) * deltaTime * playerSpeed);
 			}
 
-			if (keys["J"] || keys["K"] || keys["L"] || keys["I"]) {
-				if (secondCharacterArray.length > 0) {
-					secondCharacterArray[1].update(deltaTime);
-				}
-			} else {
-				if (secondCharacterArray.length > 0) {
-					secondCharacterArray[0].update(deltaTime);
-				}
-			}
-			//#endregion
-
-			requestAnimationFrame(render);
-			renderer.render(scene, camera);
-		}
-			
+				requestAnimationFrame(render);
+				renderer.render(scene, camera);
 		}
 
 		function setupScene() {
+
+			lvlLoad();
 
 			LOADING_MANAGER = new THREE.LoadingManager();
 			LOADING_MANAGER = new THREE.LoadingManager();
@@ -298,9 +703,9 @@
 			LOADING_MANAGER.onProgress = function (url, loaded, total) {
 				progressBar.value = (loaded / total) * 100;
 			}
-
+			
 			LOADING_MANAGER.onLoad = function () {
-
+				
 
 				$(".progress-bar-container").hide();
 				RESSOURCES_LOADED = true;
@@ -325,9 +730,6 @@
 			renderer.setSize(visibleSize.width, visibleSize.height);
 
 			//ILUMINACION AMBIENTAL
-
-
-			var ambiColor = "#FFFAD2";
 			var ambientLight = new THREE.AmbientLight(new THREE.Color(1, 1, 1), 1.0);
 			scene.add(ambientLight);
 
@@ -344,7 +746,6 @@
 			scene.add(light);
 
 			//LUZ DE FOCO 
-
 			const light2 = new THREE.PointLight(0xE9F736, 1, 50);
 			light2.position.set(18, 1, -32);
 			scene.add(light2);
@@ -353,14 +754,28 @@
 			light3.position.set(18, 1, -35);
 			scene.add(light3);
 
-			var directionalLight = new THREE.DirectionalLight(new THREE.Color(1, 1, 0), 0.4);
-			directionalLight.position.set(0, 0, 1);
+			var directionalLight;
+			if(stage == "lvl1")
+				directionalLight = new THREE.DirectionalLight(new THREE.Color(0, 0, 1), .5); //PURPLE
+			else if(stage == "lvl2")
+				directionalLight = new THREE.DirectionalLight(new THREE.Color(0, 1, 0), .5); //GREEN
+			else
+				directionalLight = new THREE.DirectionalLight(new THREE.Color(1, 0, 0), .5); //RED
+
+			directionalLight.position.set(0, 1, 0);
+			directionalLight.castShadow = true;
 			scene.add(directionalLight);
 
-			var grid = new THREE.GridHelper(50, 10, 0xffffff, 0xffffff);
-			grid.position.y = -1;
-			scene.add(grid);
+			if(music == "ON"){
+				document.getElementById("bg_music").play();
+			}
 
+			camera.rayos = [
+				new THREE.Vector3(1, 0, 0),
+				new THREE.Vector3(-1, 0, 0),
+				new THREE.Vector3(0, 0, 1),
+				new THREE.Vector3(0, 0, -1)
+			];
 
 			$("#scene-section").append(renderer.domElement);
 		}
@@ -368,12 +783,76 @@
 </head>
 
 <body>
+	<div id="loadScreen" style="display:none;">
+		<img src="./assets/Images/index/fondo.jpg" style="width:100%;height: 100%;">
+	</div>
+
+	<div id="modal_GameOver" class="modal" style="display:none;">
+		<div class="contenedor" style="background-image: url(./assets/Images/GameOver/ganador.png);">
+
+			<div class="contenido" style="margin-top:24%; text-align:center; ">
+				<h3 id="titulo" style="font-size:65px;"> </h3>
+				<p id="ganador" style="font-size:55px;"> </p>
+
+				<div>
+					<a href="index.html" class="nav-link active">
+						<image id="back_menu" src="./assets/Images/GameOver/inicio.png" />
+					</a>
+					<image id="btn_compartir" src="./assets/Images/GameOver/compartir.png" style="display:none;"/>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<div id="modal_pausa" class="modal" style="display:none;">
+		<div class="contenedor" style="background-image: url(./assets/Images/Pausa/pausa.png);">
+
+			<div class="contenido" style="margin-top:24%; text-align:center; ">
+				
+				<div class="configs_pause">
+					<image id="btn_mute_m" onclick="document.getElementById('bg_music').pause();" src="./assets/Images/Ajustes/mute1.png"/>
+					<image id="btn_sound_m" onclick="document.getElementById('bg_music').play();" src="./assets/Images/Ajustes/sonido1.png"/>
+					<image id="btn_mute_e"   onclick="soundEffects = 'OFF'" src="./assets/Images/Ajustes/mute1.png"/>
+					<image id="btn_sound_e"  onclick="soundEffects = 'ON'" src="./assets/Images/Ajustes/sonido1.png"/>
+				</div>
+
+				<div style="display: flex; margin-top:30px;    margin-left: 20px;">
+					<a id="id_back" href="index.html" class="nav-link active">
+						<image style="width:80%;" id="back_menu" src="./assets/Images/Pausa/salir.png" />
+					</a>
+					<image id="btn_resume" style="width:40%" id="btn_reanudar" onclick="hide_pause(); paused = false; requestAnimationFrame(render); " src="./assets/Images/Pausa/Reanudar.png"/>
+				</div>
+
+				
+
+			</div>
+		</div>
+	</div>
+
 	<div id="scene-section" />
 
 	<div class="progress-bar-container">
-		<label for="progress-bar">Cargando...</label>
+		<label for="progress-bar">Loading...</label>
 		<progress id="progress-bar" value="0" max="100"></progress>
 	</div>
+
+	<div id="HUD" style="display:none;">
+		<div id="item_Player1"><p id="label_Player1"></p></div>
+		<div id="item_Player2"><p id="label_Player2"></p></div>
+		<div id="pts_Player1" style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px;">
+			<p id="p_Player1">0</p>
+		</div>
+		<div id="Clock" style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px; ">
+			<p id="Time">0</p>
+		</div>
+		<div id="pts_Player2" style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px; ">
+			<p id="p_Player2">0</p>
+		</div>
+	</div>
+
+	<audio id="bg_music" src="./assets/Audio/background_music.mp4" loop></audio>
+	<audio id="item_sound" src="./assets/Audio/item_sound.mp4"></audio>
 </body>
 
 </html>

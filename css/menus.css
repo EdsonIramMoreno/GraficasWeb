@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
-/*Còdigos universales de la pàgina*/
 *{
 	margin: 0;
 	padding: 0;
@@ -10,7 +9,7 @@
 /*---*/
 .modal{
 	width: 100%;
-	height: 100vh;
+	height: 105vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -75,27 +74,27 @@
 	}
 }
 
-.jugador{
+#Jugador1, #Jugador1_s{
 	
-    height: 60px;
-    font-size: 20px;
+    height: 40px;
+    font-size: 18px;
     border-radius: 5px;
     border-color: #e0b929;
     background: #fdeb87;
-    color: white;
+    color: rgb(0, 0, 0);
 	padding: 10px;
     margin-left: 19%;
     width: 270px;
 }
 
-.jugador2{
+#Jugador2_s{
 	
-    height: 60px;
-    font-size: 20px;
+    height: 40px;
+    font-size: 18px;
     border-radius: 5px;
     border-color: #e0b929;
     background: #fdeb87;
-    color: white;
+    color: rgb(0, 0, 0);
 	padding: 10px;
     margin-left: 5%;
     width: 270px;
@@ -132,7 +131,7 @@
 	opacity: 0.8;
 }
 
-#btn_pricipiante:hover, #btn_pricipiante_s:hover{
+#btn_principiante:hover, #btn_principiante_s:hover{
     cursor: pointer;
 	opacity: 0.8;
 }
@@ -142,12 +141,27 @@
 	opacity: 0.8;
 }
 
-#btn_carnes:hover,#btn_carnes_s:hover{
+#btn_lvl1:hover,#btn_lvl1_s:hover{
     cursor: pointer;
 	opacity: 0.8;
 }
 
-#btn_verduras:hover,#btn_verduras_s:hover{
+#btn_lvl2:hover,#btn_lvl2_s:hover{
+    cursor: pointer;
+	opacity: 0.8;
+}
+
+#btn_Supervivencia:hover,#btn_Supervivencia_s:hover{
+    cursor: pointer;
+	opacity: 0.8;
+}
+
+#btn_Clasico:hover,#btn_Clasico_s:hover{
+    cursor: pointer;
+	opacity: 0.8;
+}
+
+#btn_jugarIndiv:hover,#btn_jugarMulti:hover{
     cursor: pointer;
 	opacity: 0.8;
 }
@@ -174,6 +188,11 @@
 	flex-direction:column;
 	justify-content: center;
 	align-items: center;
+}
+
+#id_back:hover{
+	cursor: pointer;
+	opacity: 0.8;
 }
 
 #progress-bar{

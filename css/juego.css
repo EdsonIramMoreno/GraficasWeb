@@ -1,8 +1,8 @@
-#item_girl {
+#item_Player1 {
     border-style: solid;
     border-width: 3px;
     border-color: red;
-    height: 100px;
+    height: 50px;
     width: 100px;
     background-color: white;
     position: absolute;
@@ -10,16 +10,16 @@
     bottom: 0;
 }
 
-#img_girl {
-    height: 94px;
+#label_Player1 {
+    height: 50px;
     width: 94px;
 }
 
-#item_guy {
+#item_Player2 {
     border-style: solid;
     border-width: 3px;
     border-color: red;
-    height: 100px;
+    height: 50px;
     width: 100px;
     background-color: white;
     position: absolute;
@@ -27,12 +27,12 @@
     bottom: 0;
 }
 
-#img_guy {
-    height: 94px;
+#label_Player2 {
+    height: 50px;
     width: 94px;
 }
 
-#pts_girl {
+#pts_Player1 {
     font-size: 30px;
     font-weight: bold;
     color: white;
@@ -46,7 +46,7 @@
     text-align: center;
 }
 
-#pts_guy {
+#pts_Player2 {
     font-size: 30px;
     font-weight: bold;
     color: white;

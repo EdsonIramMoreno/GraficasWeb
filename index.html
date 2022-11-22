@@ -3,11 +3,40 @@
 <head>
 	<title>Menu inicial</title>
 	<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="css/menus.css">
+	<link rel="stylesheet" href="./css/menus.css">
 	<script type="text/javascript" src="libs/jquery/jquery-2.1.4.min.js"></script>
 	<script type="text/javascript" src="libs/three/three.js"></script>
-	<link rel="stylesheet" type="text/css" href="css/index.css">
-	<script type="text/javascript" src="libs/menus/menu.js"></script>
+	<link rel="stylesheet" type="text/css" href="./css/index.css">
+	<script type="text/javascript" src="./libs/menus/menu.js"></script>
+	<script type="text/javascript">
+		function get(modo_) {
+			//$("#tabla_puntos").remove();
+			$("#tabla_puntos tbody tr").remove();
+			var url ="";
+			if(modo_ == "Supervivencia")
+				url = "https://graficasweb.azurewebsites.net/api/SurvivalScores";
+			else
+				url = "https://graficasweb.azurewebsites.net/api/ClassicScores";
+			$.ajax({
+				url: url,
+				type: "get",
+				dataType : "json",
+				contentType:"application/json; charset=utf-8",
+				success: function (response) {
+					var table = ""
+					for (i = 0; i < response.length; i++) { //cuenta la cantidad de registros
+						table += "<tbody><tr><td>";
+						table += response[i].useR_NAME + "</td><td>";
+						table += response[i].useR_SCORE + "</td></tr></tbody";
+					}
+					$("#tabla_puntos").append(table);
+				},
+				error: function (x, y, z) {
+					alert("Error webservice" + x + ": " + y + ": " + z);
+				}
+			})
+		}
+	</script>
 </head>
 <body>
 	<div class="content">
@@ -38,27 +67,94 @@
 		</div>
 	</div>
 
+	<div id="modal_individual" class="modal" style="display:none;">
+		<div class="contenedor" style="background-image: url(./assets/Images/GameMode/MODAL.png);" >
+			<label class="close_modal">X</label>
+			<div class="contenido" style="margin-top:24px;">
+
+				<div style="margin-top: 18%;">
+					<input id="Jugador1" type="text" placeholder="Ingresa tu nombre" required/>
+				</div>
+
+				<div style="margin-top: 20px; margin-left: 40%;">
+					<image id="btn_principiante" src="./assets/Images/GameMode/Principiante.png" style="max-height: 75px; opacity: .5;">
+					<image id="btn_avanzado" src="./assets/Images/GameMode/Avanzado.png" style="max-height: 75px;">
+				</div>
+
+				<div style="margin-top: 30px; margin-left: 40%;">
+					<image id= "btn_lvl1" src="./assets/Images/GameMode/Carnes_pescado.png" style="max-height: 75px; max-width: 150px; opacity: .5;">
+					<image id= "btn_lvl2" src="./assets/Images/GameMode/Frutas_verduras.png" style="max-height: 75px; max-width: 150px;">
+					<image id= "btn_lvl3" src="./assets/Images/GameMode/Frutas_verduras.png" style="max-height: 75px; max-width: 150px;">
+				</div>
+
+				<div style="margin-top: 30px; margin-left: 40%;">
+					<image id= "btn_Clasico"src="./assets/Images/GameMode/Carnes_pescado.png" style="max-height: 75px; opacity: .5;">
+					<image id="btn_Supervivencia" src="./assets/Images/GameMode/Carnes_pescado.png" style="max-height: 75px;">
+				</div>
+
+				<div style="text-align: center; margin-top:15px;">
+					<image id="btn_jugarIndiv" src="./assets/Images/GameMode/JUGAR.png" style="max-height: 75px;">
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <div id="modal_multijugador" class="modal" style="display:none;">
+		<div class="contenedor" style="background-image: url(./assets/Images/GameMode/MODAL.png);">
+			<label class="close_modal">X</label>
+			<div class="contenido" style="margin-top:24px;">
+
+				<div style="margin-top: 18%;">
+					<input id = "Jugador1_s" type="text" placeholder="Ingresa tu nombre"/>
+					<input id = "Jugador2_s" type="text" placeholder="Ingresa tu nombre"/>
+				</div>
+
+				<div style="margin-top: 23px; margin-left: 40%;">
+					<image id="btn_principiante_s" src="./assets/Images/GameMode/Principiante.png" style="opacity: .5;">
+					<image id= "btn_avanzado_s" src="./assets/Images/GameMode/Avanzado.png">
+				</div>
+
+				<div style="margin-top: 35px; margin-left: 40%;">
+					<image id= "btn_lvl1_s" src="./assets/Images/GameMode/Carnes_pescado.png" style="max-height: 75px; max-width: 150px; opacity: .5;">
+					<image id= "btn_lvl2_s" src="./assets/Images/GameMode/Frutas_verduras.png" style="max-height: 75px; max-width: 150px;">
+					<image id= "btn_lvl3_s" src="./assets/Images/GameMode/Frutas_verduras.png" style="max-height: 75px; max-width: 150px;">
+				</div>
+
+				<div style="margin-top: 30px; margin-left: 40%;">
+					<image id= "btn_Clasico_s" src="./assets/Images/GameMode/Carnes_pescado.png" style="opacity: .5;">
+					<image id= "btn_Supervivencia_s" src="./assets/Images/GameMode/Carnes_pescado.png">
+				</div>
+
+				<div style="text-align: center; margin-top:15px;">
+					
+					<image id="btn_jugarMulti" src="./assets/Images/GameMode/JUGAR.png">
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div id="modal_records" class="modal" style="display:none;">
 		<div class="contenedor" style="background-image: url(./assets/Images/Records/modalRecords1.png);">
 			<label class="close_modal">X</label>
 			<div class="contenido" style="margin-top:24%; text-align:center; ">
 
 				<div>
-					<image src="./assets/Images/Records/Clasico2.png" onclick="get('classic')" />
+					<image id="id_record_Clasico" src="./assets/Images/Records/Clasico2.png" onclick="get('Clasico')" />
+					<image id="id_record_Supervivencia" src="./assets/Images/Records/Clasico2.png" onclick="get('Supervivencia')" />
 				</div>
 
 			<div style="overflow-y: scroll; height: 200px;width:60%;margin: 0 auto;">
 				<table id="tabla_puntos">
-					<tr>
-						<th>Nombre</th>
-						<th>Puntos</th>
-					</tr>
-
-
+					<thead>
+						<tr>
+							<td>Nombre</td>
+							<td>Puntos</td>
+						</tr>
+					</thead>
 				</table>
 			</div>
-				
-
 			</div>
 		</div>
 	</div>
@@ -70,9 +166,9 @@
 
 			<div class="configs">
 				<image id="btn_mute_m" src="./assets/Images/Ajustes/mute1.png"/>
-				<image id="btn_sound_m" src="./assets/Images/Ajustes/sonido1.png"/>
+				<image id="btn_sound_m" src="./assets/Images/Ajustes/sonido1.png" style="opacity: .5;"/>
 				<image id="btn_mute_e" src="./assets/Images/Ajustes/mute1.png"/>
-				<image id="btn_sound_e" src="./assets/Images/Ajustes/sonido1.png"/>
+				<image id="btn_sound_e" src="./assets/Images/Ajustes/sonido1.png" style="opacity: .5;"/>
 			</div>
 				
 			</div>

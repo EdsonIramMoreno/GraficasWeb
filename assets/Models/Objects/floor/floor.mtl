@@ -1,0 +1,61 @@
+newmtl pared:RoomSG
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.59 0.59 0.59
+Tf 1.00 1.00 1.00
+map_Kd pared2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl pared:pasted__RoomSG
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.59 0.59 0.59
+Tf 1.00 1.00 1.00
+map_Kd pared2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl pared:pasted__RoomSG2
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.59 0.59 0.59
+Tf 1.00 1.00 1.00
+map_Kd pared2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl pared1:RoomSG
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.59 0.59 0.59
+Tf 1.00 1.00 1.00
+map_Kd pared2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl pared1:pasted__RoomSG
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.59 0.59 0.59
+Tf 1.00 1.00 1.00
+map_Kd pared2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl pared1:pasted__RoomSG2
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.59 0.59 0.59
+Tf 1.00 1.00 1.00
+map_Kd pared2.jpg
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl piso:initialShadingGroup
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd Palette5.jpg
+Ni 1.00
