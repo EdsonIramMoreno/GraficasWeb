@@ -404,7 +404,8 @@
 								send(playersNames[1], secondCharacterScore);
 							}
 							else {
-								document.getElementById("titulo").innerText = "Empate";
+								document.getElementById("titulo").innerText = "Resultado:";
+								document.getElementById("ganador").innerText = "Empate:";
 							}
 						}
 						else{
@@ -596,17 +597,23 @@
 								var pts = Math.floor(document.getElementById("pts_Player1").innerText);
 									switch (randItem[i].name) {
 										case "star":
+												var audio = new Audio('assets/Audio/pickup.mp3');
+												audio.play();
 											document.getElementById("pts_Player1").innerText = pts + 1;
 										break;
 										case "bomb":
 											if(pts - 1 > 0)
 												document.getElementById("pts_Player1").innerText = pts - 1;
+												var audio = new Audio('assets/Audio/bomb.mp3');
+												audio.play();
 											if(gameMode == "Supervivencia"){
 												isFirstPlayerAlive = false;
 												firstCharacter.position.y = -10;
 											}
 										break;
 										case "coin":
+											var audio = new Audio('assets/Audio/pickup.mp3');
+												audio.play();
 											document.getElementById("pts_Player1").innerText = pts + 1;
 										break;
 									}
@@ -787,18 +794,21 @@
 		<img src="./assets/Images/index/fondo.jpg" style="width:100%;height: 100%;">
 	</div>
 
-	<div id="modal_GameOver" class="modal" style="display:none;">
+	<div id="modal_GameOver" class="modal" style="display: none;">
 		<div class="contenedor" style="background-image: url(./assets/Images/GameOver/ganador.png);">
 
 			<div class="contenido" style="margin-top:24%; text-align:center; ">
-				<h3 id="titulo" style="font-size:65px;"> </h3>
-				<p id="ganador" style="font-size:55px;"> </p>
+				<p id="titulo" class="totalPuntos" style="margin-top: 50px; margin-bottom: 50px; font-size:45px;"></p>
+				<p id="ganador" class="ganador totalPuntos" style="font-size:55px; margin-bottom: 50px;"> </p>
 
-				<div>
+				<div style="margin-top: 20px;     margin-top: 20px;
+				display: flex;
+				justify-content: center;
+				align-content: stretch;">
 					<a href="index.html" class="nav-link active">
 						<image id="back_menu" src="./assets/Images/GameOver/inicio.png" />
 					</a>
-					<image id="btn_compartir" src="./assets/Images/GameOver/compartir.png" style="display:none;"/>
+					<image id="btn_compartir" src="./assets/Images/GameOver/compartir.png" />
 				</div>
 
 			</div>
@@ -840,18 +850,18 @@
 	<div id="HUD" style="display:none;">
 		<div id="item_Player1"><p id="label_Player1"></p></div>
 		<div id="item_Player2"><p id="label_Player2"></p></div>
-		<div id="pts_Player1" style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px;">
-			<p id="p_Player1">0</p>
+		<div id="pts_Player1"  style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px;">
+			<p class="pts" id="p_Player1">0</p>
 		</div>
 		<div id="Clock" style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px; ">
-			<p id="Time">0</p>
+			<p class="pts" id="Time">0</p>
 		</div>
 		<div id="pts_Player2" style = "background-image: url('./assets/Images/HUD/juego.png'); background-repeat: no-repeat;background-size: cover; width: 114px; height: 55px; ">
-			<p id="p_Player2">0</p>
+			<p class="pts" id="p_Player2">0</p>
 		</div>
 	</div>
 
-	<audio id="bg_music" src="./assets/Audio/background_music.mp4" loop></audio>
+	<audio id="bg_music" src="./assets/Audio/pac pac pac pac pac.mp3" loop></audio>
 	<audio id="item_sound" src="./assets/Audio/item_sound.mp4"></audio>
 </body>
 
