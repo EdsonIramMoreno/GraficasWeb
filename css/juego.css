@@ -1,35 +1,51 @@
+@import url('https://fonts.cdnfonts.com/css/arcade-classic');
+
 #item_Player1 {
     border-style: solid;
     border-width: 3px;
-    border-color: red;
+    border-color: #7a3512;
     height: 50px;
     width: 100px;
-    background-color: white;
+    background-color: #c74a0a;
     position: absolute;
     left: 8;
+    border-radius: 20px;
     bottom: 0;
+    text-align: center;
+    color: #fff;
+    
+	
+	font-family: 'ArcadeClassic', sans-serif!important;
 }
 
 #label_Player1 {
     height: 50px;
     width: 94px;
+    margin-top:10%;
 }
 
 #item_Player2 {
     border-style: solid;
     border-width: 3px;
-    border-color: red;
+    border-color: #7a3512;
     height: 50px;
     width: 100px;
-    background-color: white;
+    background-color: #c74a0a;
     position: absolute;
     right: 0;
+    border-radius: 20px;
     bottom: 0;
+    text-align: center;
+    color: #fff;
+    
+	
+	font-family: 'ArcadeClassic', sans-serif!important;
 }
 
 #label_Player2 {
-    height: 50px;
+  height: 50px;
     width: 94px;
+    margin-top:10%;
 }
 
 #pts_Player1 {
