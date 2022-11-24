@@ -9,6 +9,7 @@
 	<script type="text/javascript" src="./libs/jquery/jquery-2.1.4.min.js"></script>
 	<script type="text/javascript" src="./libs/three/three2.js"></script>
 	<script type="text/javascript" src="./libs/menus/menu.js"></script>
+	<script type="text/javascript" src="./libs/js/facebook.js"></script>
 	<script type="text/javascript" src="./libs/three/MTLLoader.js"></script>
 	<script type="text/javascript" src="./libs/three/OBJLoader.js"></script>
 	<script type="text/javascript" src="./libs/three/FBXLoader.js"></script>
@@ -75,10 +76,14 @@
 			else
 				$("#btn_mute_m").css("opacity", .5);
 
-			if(dificulty == "principiante")
+			if(dificulty == "principiante"){
 				playerSpeed = 1;
-			else
+				gravity = 6;
+			}
+			else{
 				playerSpeed = .75;
+				gravity = 8;
+			}
 		}
 
 	</script>
@@ -99,6 +104,7 @@
 		var controls;
 		var clock;
 		var deltaTime;
+		var gravity;
 		var keys = {};
 
 		//Array for FBX Animations
@@ -121,7 +127,7 @@
 		var vCoin;
 		var vShadow;
 
-		var timer = 10;
+		var timer = 120;
 
 		//Collisions
 		var rayCaster;
@@ -315,6 +321,8 @@
 				vBomb = bomba;
 				items.push(vBomb);
 				if(dificulty == "avanzado"){
+					items.push(vBomb);
+					items.push(vBomb);
 					items.push(vBomb);
 					items.push(vBomb);
 				}
@@ -569,7 +577,7 @@
 							}
 
 							if (randItem[i].position.y > -.05) {
-								randItem[i].position.y -= 6 * deltaTime;
+								randItem[i].position.y -= gravity * deltaTime;
 							} else {
 								scene.remove(randItem[i]);
 								scene.remove(itemShadow[i]);
@@ -589,32 +597,27 @@
 							var collisionFirstCharacterItem = itemCollision.intersectsBox(boxCollision_1);
 							
 							if (collisionFirstCharacterItem) {
-								
-								if (soundEffects == "ON") {
-									document.getElementById("item_sound").play();
-								}
-
 								var pts = Math.floor(document.getElementById("pts_Player1").innerText);
 									switch (randItem[i].name) {
 										case "star":
-												var audio = new Audio('assets/Audio/pickup.mp3');
-												audio.play();
 											document.getElementById("pts_Player1").innerText = pts + 1;
+											if (soundEffects == "ON") 
+												document.getElementById("item_sound").play();
 										break;
 										case "bomb":
 											if(pts - 1 > 0)
 												document.getElementById("pts_Player1").innerText = pts - 1;
-												var audio = new Audio('assets/Audio/bomb.mp3');
-												audio.play();
 											if(gameMode == "Supervivencia"){
 												isFirstPlayerAlive = false;
 												firstCharacter.position.y = -10;
 											}
+											if (soundEffects == "ON") 
+												document.getElementById("bomb_sound").play();
 										break;
 										case "coin":
-											var audio = new Audio('assets/Audio/pickup.mp3');
-												audio.play();
 											document.getElementById("pts_Player1").innerText = pts + 1;
+											if (soundEffects == "ON") 
+												document.getElementById("item_sound").play();
 										break;
 									}
 									
@@ -642,15 +645,12 @@
 								var collisionSecondCharacterItem = itemCollision.intersectsBox(boxCollision_2);
 								
 								if (collisionSecondCharacterItem) {
-									
-									if (soundEffects == "ON") {
-										document.getElementById("item_sound").play();
-									}
-									
 									var pts = Math.floor(document.getElementById("pts_Player2").innerText);
 									switch (randItem[i].name) {
 										case "star":
 											document.getElementById("pts_Player2").innerText = pts + 1;
+											if (soundEffects == "ON") 
+												document.getElementById("item_sound").play();
 											break;
 											case "bomb":
 											if(pts - 1 > 0)
@@ -659,10 +659,14 @@
 												isSecondPlayerAlive = false;
 												secondCharacter.position.y = -10;
 											}
+											if (soundEffects == "ON") 
+												document.getElementById("bomb_sound").play();
 											break;
 											case "coin":
 												document.getElementById("pts_Player2").innerText = pts + 1;
-												break;
+												if (soundEffects == "ON") 
+													document.getElementById("item_sound").play();
+											break;
 									}
 
 									scene.remove(itemShadow[i]);
@@ -725,7 +729,6 @@
 
 			clock = new THREE.Clock();
 			scene = new THREE.Scene();
-			scene.background = new THREE.Color("#34495E");
 			camera = new THREE.PerspectiveCamera(45, (visibleSize.width / visibleSize.height), 0.1, 300);
 			camera.position.z = 35;
 			camera.position.y = 50;
@@ -762,19 +765,30 @@
 			scene.add(light3);
 
 			var directionalLight;
-			if(stage == "lvl1")
+			if(stage == "lvl1"){
 				directionalLight = new THREE.DirectionalLight(new THREE.Color(0, 0, 1), .5); //PURPLE
-			else if(stage == "lvl2")
+				scene.background = new THREE.Color("#c3beff");
+			}
+			else if(stage == "lvl2"){
 				directionalLight = new THREE.DirectionalLight(new THREE.Color(0, 1, 0), .5); //GREEN
-			else
+				scene.background = new THREE.Color("#c4ffbc");
+			}
+			else{
 				directionalLight = new THREE.DirectionalLight(new THREE.Color(1, 0, 0), .5); //RED
+				scene.background = new THREE.Color("#ffbdb8");
+			}
 
 			directionalLight.position.set(0, 1, 0);
 			directionalLight.castShadow = true;
 			scene.add(directionalLight);
 
 			if(music == "ON"){
-				document.getElementById("bg_music").play();
+				if(stage == "lvl1")
+					document.getElementById("bg_musiclvl1").play();
+				else if (stage == "lvl2")
+					document.getElementById("bg_musiclvl2").play();
+				else
+					document.getElementById("bg_musiclvl3").play();
 			}
 
 			camera.rayos = [
@@ -808,9 +822,9 @@
 					<a href="index.html" class="nav-link active">
 						<image id="back_menu" src="./assets/Images/GameOver/inicio.png" />
 					</a>
-					<image id="btn_compartir" src="./assets/Images/GameOver/compartir.png" />
+					<image id="btn_compartir" src="./assets/Images/GameOver/compartir.png" onClick="share()"/>
 				</div>
-
+ 
 			</div>
 		</div>
 	</div>
@@ -821,10 +835,10 @@
 			<div class="contenido" style="margin-top:24%; text-align:center; ">
 				
 				<div class="configs_pause">
-					<image id="btn_mute_m" onclick="document.getElementById('bg_music').pause();" src="./assets/Images/Ajustes/mute1.png"/>
-					<image id="btn_sound_m" onclick="document.getElementById('bg_music').play();" src="./assets/Images/Ajustes/sonido1.png"/>
-					<image id="btn_mute_e"   onclick="soundEffects = 'OFF'" src="./assets/Images/Ajustes/mute1.png"/>
-					<image id="btn_sound_e"  onclick="soundEffects = 'ON'" src="./assets/Images/Ajustes/sonido1.png"/>
+					<image id="btn_mute_m" onclick="document.getElementById('bg_music').pause();" src="./assets/Images/Ajustes/mute.png"/>
+					<image id="btn_sound_m" onclick="document.getElementById('bg_music').play();" src="./assets/Images/Ajustes/sonido.png"/>
+					<image id="btn_mute_e"   onclick="soundEffects = 'OFF'" src="./assets/Images/Ajustes/mute.png"/>
+					<image id="btn_sound_e"  onclick="soundEffects = 'ON'" src="./assets/Images/Ajustes/sonido.png"/>
 				</div>
 
 				<div style="display: flex; margin-top:30px;    margin-left: 20px;">
@@ -861,8 +875,11 @@
 		</div>
 	</div>
 
-	<audio id="bg_music" src="./assets/Audio/pac pac pac pac pac.mp3" loop></audio>
-	<audio id="item_sound" src="./assets/Audio/item_sound.mp4"></audio>
+	<audio id="bg_musiclvl1" src="./assets/Audio/kirby jazz.mp3" loop></audio>
+	<audio id="bg_musiclvl2" src="./assets/Audio/muteCityBossa.mp3" loop></audio>
+	<audio id="bg_musiclvl3" src="./assets/Audio/pac pac pac pac pac.mp3" loop></audio>
+	<audio id="item_sound" src="./assets/Audio/pickup.mp3"></audio>
+	<audio id="bomb_sound" src="./assets/Audio/bomb.mp3"></audio>
 </body>
 
 </html>
