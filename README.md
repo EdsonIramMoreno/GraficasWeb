@@ -1,6 +1,6 @@
 # Graficas Web
 
-####**[Click Here to Play](https://edsonirammoreno.github.io/GraficasWeb/index.html "Click Here to Play")**
+####[Click Here to Play](https://edsonirammoreno.github.io/GraficasWeb/index.html "Click Here to Play")
 
 This was my final project of a 7th semester subject called Web Graphics, it is a basic 3D game, where the main objective is to gather items without catching a bomb, it has two diferent difficulties and also has two game modes:
 
