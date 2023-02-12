@@ -10,7 +10,7 @@ This was my final project of a 7th semester subject called Web Graphics, it is a
 ##### Principal menus
 ![image](https://user-images.githubusercontent.com/79424063/217752667-6805fdbc-756d-4009-a692-f9cd45d66bc8.png)
 
-####Main Game
+#### Main Game
 
 ##### - Single player
 ![image](https://user-images.githubusercontent.com/79424063/217753078-ad69e246-653a-43f5-b48b-59ad8e27f70e.png)
