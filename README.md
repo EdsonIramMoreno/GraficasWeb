@@ -7,7 +7,7 @@ This was my final project of a 7th semester subject called Web Graphics, it is a
 - **Classic**: Gather the most amount of items in a limited time to earn points, every bomb that you catch is a decrement of points.
 - **Survival**: Gather the most amount of items in an unlimited time to earn points, if you catch a bomb is game over.
 
-#####Principal menus
+##### Principal menus
 ![image](https://user-images.githubusercontent.com/79424063/217752667-6805fdbc-756d-4009-a692-f9cd45d66bc8.png)
 
 ####Main Game
@@ -25,7 +25,7 @@ This was my final project of a 7th semester subject called Web Graphics, it is a
 It is a complete game in terms of gameplay and usability, but the "Records"
 it's not available due to its API & Database not being hosted.
 
-##Tech/Framework used
+## Tech/Framework used
 
 The disign was developed with HTML & CSS, most of the disign was created as image with the help of image editors and the functionality of the menus was done with JavaScript.
 
